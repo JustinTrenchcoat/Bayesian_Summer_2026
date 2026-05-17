@@ -58,10 +58,39 @@ for (j in 1:n_chains_512) {
   theta1_matrix_512[, j] <- run_metropolis_chain(n_samples, init_point, proposal_sd = 0.5)
 }
 # convert to mcmc.list
-chains_4 <- list()
-for (i in 1:n_chains_4){
-  chains_4[[i]] <- theta1_matrix_4[100:1100,i]
+rhat_4 <- list()
+for (j in 1: n_samples){
+  chains_4 <- list()
+  for (i in 1:n_chains_4){
+    chains_4[[i]] <- theta1_matrix_4[1:j,i]
+  }
+  mcmc_chains <- mcmc.list(lapply(chains_4,mcmc))
+  rhat_4[[j]] <- gelman.diag(mcmc_chains)$psrf[1]-1
+}
+rhat_512 <- list()
+for (j in 1: n_samples){
+  chains_512 <- list()
+  for (i in 1:n_chains_512){
+    chains_512[[i]] <- theta1_matrix_512[1:j,i]
+  }
+  mcmc_chains <- mcmc.list(lapply(chains_512,mcmc))
+  rhat_512[[j]] <- gelman.diag(mcmc_chains)$psrf[1]-1
 }
 
-mcmc_chains <- mcmc.list(lapply(chains_4,mcmc))
-gelman.diag(mcmc_chains)
+
+plot(100:1100, rhat_4[100:1100], 
+     type = "l", col = "steelblue", lwd = 2,
+     log = "y",                     
+     ylim = c(0.0001, 1.5),            
+     yaxt = "n",                       
+     main = expression(hat(R) - 1),    
+     xlab = "Post-warmup sampling iterations", 
+     ylab = expression(hat(R) - 1))
+lines(100:1100, rhat_512[100:1100], 
+      col = "orange", lwd = 2)
+tick_positions <- c(1, 0.01, 0.0001)
+tick_labels <- expression(10^0, 10^-2, 10^-4)
+axis(side = 2, at = tick_positions, labels = tick_labels, las = 1)
+abline(h=0.01, lty=2, col="red")
+legend("topright", legend = c("4 Chains", "512 Chains"),
+       col = c("steelblue", "orange"), lwd = 2)
