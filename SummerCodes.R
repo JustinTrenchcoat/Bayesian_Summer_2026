@@ -3,6 +3,8 @@ S <- 5000
 t1 <- rnorm(S, 0, 1)
 t2 <- rnorm(S, 0.03 * (t1^2 - 100), 1)
 
+plot(t1,t2, type='p')
+
 # 2. Use a 2D density estimator (standard way to visualize MC samples)
 # This replaces your nested loop and matrix
 dens <- MASS::kde2d(t1, t2, n = 100) # n=100 creates a 100x100 grid
@@ -14,7 +16,7 @@ contour(dens, add = TRUE) # Overlay level sets
 
 ##########################
 # original code:
-S <- 500
+S <- 1000
 
 theta1.mc <- rnorm(S, 0, 1)
 

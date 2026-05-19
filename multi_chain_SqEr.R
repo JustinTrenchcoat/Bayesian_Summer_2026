@@ -35,6 +35,7 @@ run_metropolis_chain <- function(n_samples, init_theta, proposal_sd = 0.5) {
 }
 # actual sampling part:
 set.seed(123)
+B <- 100
 n_samples <- 1100
 n_chains_4 <- 4
 n_chains_512 <- 512
@@ -43,7 +44,7 @@ theta1_matrix_4 <- matrix(NA, nrow = n_samples, ncol = n_chains_4)
 theta1_matrix_512 <- matrix(NA, nrow = n_samples, ncol = n_chains_512)
 
 
-init_point <- c(runif(1, -3, 3), runif(1, -10, 0)) 
+init_point <- c(runif(1, -2, 2), runif(1, -10, 0)) 
 
 for (j in 1:n_chains_4) {
   theta1_matrix_4[, j] <- run_metropolis_chain(n_samples, init_point, proposal_sd = 0.5)
@@ -51,12 +52,13 @@ for (j in 1:n_chains_4) {
 for (j in 1:n_chains_512) {
   theta1_matrix_512[, j] <- run_metropolis_chain(n_samples, init_point, proposal_sd = 0.5)
 }
+
 # get squared error
 se_matrix_4 <- matrix(NA, nrow = n_samples, ncol = n_chains_4)
 for (j in 1:n_chains_4) {
-  running_mean <- cumsum(theta1_matrix_4[, j]) / (1:n_samples)
-  se_matrix_4[, j] <- (running_mean - 0)^2 
+  se_matrix_4[, j] <- cumsum(theta1_matrix_4[, j]) / (1:n_samples)
 }
+avg_squared_error_4 <- (rowMeans(se_matrix_4))^2 
 
 se_matrix_512 <- matrix(NA, nrow = n_samples, ncol = n_chains_512)
 for (j in 1:n_chains_512) {
@@ -64,17 +66,21 @@ for (j in 1:n_chains_512) {
   se_matrix_512[, j] <- (running_mean - 0)^2 
 }
 
-avg_squared_error_4 <- rowMeans(se_matrix_4)
 avg_squared_error_512 <- rowMeans(se_matrix_512)
 
+avg_squared_error_4 <- avg_squared_error_4[B+1:n_samples]
 
-plot(100:1100, avg_squared_error_4[100:1100], 
+plot(B+1:n_samples,avg_squared_error_4, 
      type = "l", col = "darkgreen", lwd = 2,
-     ylim = range(c(1.5, avg_squared_error_4[100:1100])),
+     #ylim = range(c(1.5, avg_squared_error_4)),
      main = "Avg Squared Error (Burn-in Not Included)",
      xlab = "Post-warmup sampling iterations", 
-     ylab = "Squared Error for mean estimation")
-
+     ylab = "Squared Error for mean estimation",
+     yaxt="n",
+     log = 'y')
+tick_positions <- c(1, 0.01, 0.0001)
+tick_labels <- expression(10^0, 10^-2, 10^-4)
+axis(side = 2, at = tick_positions, labels = tick_labels, las = 1)
 # 2. Add the second line on top using lines()
 lines(100:1100, avg_squared_error_512[100:1100], 
       col = "orange", lwd = 2)
