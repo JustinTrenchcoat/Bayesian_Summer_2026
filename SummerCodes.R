@@ -15,26 +15,33 @@ image(dens, col = terrain.colors(100), xlab = expression(theta[1]), ylab = expre
 contour(dens, add = TRUE) # Overlay level sets
 
 ##########################
-# original code:
-S <- 1000
+library(plotly)
 
-theta1.mc <- rnorm(S, 0, 1)
+S1 <- 250
+S2 <- 300
+t1 <- seq(-4, 4, length=S1)
+t2 <- seq(-5, -1, length=S2) 
 
-theta2.mc <- rnorm(S, 0.03 * (theta1.mc^2 - 100), 1)
+# Initialize a clean matrix of zeros
+post.grid <- matrix(0, nrow=S1, ncol=S2)
 
-t1 <- seq(-2, 2, length=S)
-t2 <- seq(-5, -1, length=S)
-
-matx.mc <- matrix(0,S,S)
-
-for (i in 1:S){
-  for (j in 1:S){
-    matx.mc[i,j] <- dnorm(t1[i], 0,1,log=TRUE)+
-      dnorm(t2[j], 0.03*(t1[i]^2-100), 1, log=TRUE)
+# 2. Build the stable log grid
+for(the1 in 1:S1) {
+  for(the2 in 1:S2) { 
+    log_p_t1 <- dnorm(t1[the1], 0, 1, log = TRUE)
+    log_p_t2_given_t1 <- dnorm(t2[the2], 0.03 * (t1[the1]^2 - 100), 1, log = TRUE)
+    post.grid[the1, the2] <- log_p_t1 + log_p_t2_given_t1
   }
 }
-image(t1, t2, exp(matx.mc), col=blues9, 
-      xlab=expression(theta1),
-      ylab=expression(theta2)
-)
-contour(t1, t2, exp(matx.mc), add=TRUE)
+
+post.grid <- exp(post.grid)
+post.grid <- post.grid / sum(post.grid)
+
+plot_ly(x = t1, y = t2, z = post.grid, type = "surface") %>%
+  layout(
+    scene = list(
+      xaxis = list(title = "Theta 1"),
+      yaxis = list(title = "Theta 2"),
+      zaxis = list(title = "Value")
+    )
+  )
