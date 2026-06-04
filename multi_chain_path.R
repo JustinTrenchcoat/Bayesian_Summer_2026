@@ -33,10 +33,8 @@ run_metropolis_chain <- function(n_samples, init_theta, proposal_sd = 0.5) {
   return(samples) # Return both theta1 and theta 2
 }
 
-# [Keep your log_joint_density and run_metropolis_chain functions exactly as they are]
-
 set.seed(123)
-n_samples <- 1100
+n_samples <- 110000
 n_chains_4 <- 4
 
 theta1_matrix_4 <- matrix(NA, nrow = n_samples, ncol = n_chains_4)

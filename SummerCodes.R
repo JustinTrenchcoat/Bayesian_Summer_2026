@@ -1,7 +1,7 @@
 # AI codes
 S <- 5000
 t1 <- rnorm(S, 0, 1)
-t2 <- rnorm(S, 0.03 * (t1^2 - 100), 1)
+t2 <- rnorm(S, 0.03 * (t1^2-100), 1)
 
 plot(t1,t2, type='p')
 
@@ -19,8 +19,8 @@ library(plotly)
 
 S1 <- 250
 S2 <- 300
-t1 <- seq(-4, 4, length=S1)
-t2 <- seq(-5, -1, length=S2) 
+t1 <- seq(-1, 1, length=S1)
+t2 <- seq(-4, -2, length=S2) 
 
 # Initialize a clean matrix of zeros
 post.grid <- matrix(0, nrow=S1, ncol=S2)
@@ -29,13 +29,13 @@ post.grid <- matrix(0, nrow=S1, ncol=S2)
 for(the1 in 1:S1) {
   for(the2 in 1:S2) { 
     log_p_t1 <- dnorm(t1[the1], 0, 1, log = TRUE)
-    log_p_t2_given_t1 <- dnorm(t2[the2], 0.03 * (t1[the1]^2 - 100), 1, log = TRUE)
+    log_p_t2_given_t1 <- dnorm(t2[the2], mean=3 * (t1[the1]^2 - 1), sd=1, log = TRUE)
     post.grid[the1, the2] <- log_p_t1 + log_p_t2_given_t1
   }
 }
 
-post.grid <- exp(post.grid)
-post.grid <- post.grid / sum(post.grid)
+# post.grid <- exp(post.grid)
+#post.grid <- post.grid / sum(post.grid)
 
 plot_ly(x = t1, y = t2, z = post.grid, type = "surface") %>%
   layout(
@@ -45,3 +45,27 @@ plot_ly(x = t1, y = t2, z = post.grid, type = "surface") %>%
       zaxis = list(title = "Value")
     )
   )
+
+# level set of kernel?
+# 1. Define function
+f <- function(x, y) {(x^2) + (y-0.03*(x^2-100))^2}
+
+# 2. Create grid
+x <- seq(-50, 50, length.out = 1000)
+y <- seq(-50, 50, length.out = 1000)
+z <- outer(x,y,f)
+
+library(viridisLite)
+
+image(
+  x, y, z,
+  col = viridis(100),
+  xlab = "x",
+  ylab = "y"
+)
+contour(
+  x,
+  y,
+  z,
+  drawlabels = TRUE
+)
