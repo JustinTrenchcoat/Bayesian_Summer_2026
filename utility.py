@@ -61,13 +61,13 @@ def simulation(keys, initialize_fn,
                naive, repitition,
                MSE_list, R_Hat_list,
                num_dim, state_list,
-               mean_benchmark,var_benchmark, 
+               mean_benchmark,var_benchmark,
                num_super_chains,num_sub_chains,
                target_log_prob_fn, init_step_size):
   result_mse = []
   # very long warmup phase might result in memory issue.
-  skip_trace = (warmup_length > 600)
-     
+  skip_trace = (warmup_length > 500)
+
   for sim in range(repitition):
     kernel_short, initial_state, total_samples_short, initial_state_super = kernel_setup(warmup_length,sampling_length,
                                                             num_sub_chains, num_super_chains,
@@ -158,17 +158,22 @@ def simulation(keys, initialize_fn,
   jax.clear_caches()
 
 
+
 #########################################################################################################
-
-
 
 # plotting functions:
 # the plotting function would be based on dfs returned by the simulation
-def trace_plot(state_df, iteration,
+def trace_plot(state_df, iteration, warmup_length,
                DimIdx1, DimIdx2,
                show_chain_num, naive):
-    states = state_df["States"][iteration]
-    initial_pos = state_df["Initial Position"][iteration]
+  #          state_c_df[(state_c_df['Warmup Length']==10) & (state_c_df['Iteration'] == 0)]['States']
+    states = state_df.loc[
+        (state_df['Warmup Length'] == warmup_length) &
+        (state_df['Iteration'] == iteration),
+        'States'
+        ].iloc[0]
+  # with shape of (W+2, num_subchain, dim)
+    initial_pos = states[0]
     num_super_chain = initial_pos.shape[0]
     chains = np.random.choice(states.shape[1], show_chain_num, replace=False)
 
@@ -176,6 +181,7 @@ def trace_plot(state_df, iteration,
 
     for chain in chains:
         trajectory = states[:, chain, :]
+        # with shape (W+2, dim)
         plt.plot(trajectory[:, DimIdx1], trajectory[:, DimIdx2], alpha=0.3, lw=1)
         plt.scatter(trajectory[-1, DimIdx1], trajectory[-1, DimIdx2], s=20)
 
@@ -191,8 +197,30 @@ def trace_plot(state_df, iteration,
     plt.ylabel(f"Dimension {DimIdx2}")
     plt.title(
         f"Iteration: {iteration}, Traceplot of Dim {DimIdx1} and Dim {DimIdx2}, "
-        f"{show_chain_num} chains"
+        f"{show_chain_num} chains,"
+        f"Warmup Length: {warmup_length}"
     )
+    handles = [
+    Line2D(
+        [0], [0],
+        marker="o",
+        color="black",
+        linestyle="",
+        markersize=6,
+        label="Endpoint"
+    )]
+    if not naive:
+      handles.append(
+        Line2D(
+            [0], [0],
+            marker="^",
+            color="black",
+            linestyle="",
+            markersize=8,
+            label="Starting Point"
+        ))
+
+    plt.legend(handles=handles, loc="best")
     plt.show()
 
 def MSE_vs_Warmup(constrained_df, naive_df, title):
@@ -243,23 +271,6 @@ def MSE_vs_Warmup(constrained_df, naive_df, title):
     Line2D([0], [0], color="orange", lw=2, label="Constrained"),
     Line2D([0], [0], color="black", lw=2, label="Naive")])
 
-# Example of schemes
-  # marker_scheme = {
-  #       50: "o",
-  #       80: "s",
-  #       100: "^",
-  #       200: "D",
-  #       500: "*"
-  #   }
-
-  #   # Color for each warmup length
-  # color_scheme = {
-  #   10: "tab:blue",
-  #   25: "tab:cyan",
-  #   50: "tab:green",
-  #   75: "tab:orange",
-  #   100: "tab:red"
-  #   }
 def MSE_vs_Rhat(
     df,
     title,
@@ -278,7 +289,7 @@ def MSE_vs_Rhat(
         ###################################################
 
         sc = ax.scatter(
-            df["Rhat"],
+            df["Rhat"]-1,
             df["MSE"],
             c=df["Dimension"],
             cmap="viridis",      # or "turbo"
@@ -310,7 +321,7 @@ def MSE_vs_Rhat(
 
         for warmup, subset in groups:
             ax.scatter(
-                subset["Rhat"],
+                subset["Rhat"]-1,
                 subset["MSE"],
                 color=color_map[warmup],
                 s=35,
@@ -351,7 +362,7 @@ def MSE_vs_Rhat(
     ax.axhline(1 / num_subchains, color="black")
     ax.axvline(threshold, color="blue", linestyle="--")
 
-    ax.set_xlabel(r"$\widehat{R}_{\nu}$")
+    ax.set_xlabel(r"$\widehat{R}_{\nu}-1$")
     ax.set_ylabel("MSE")
 
     suffix = "Constrained" if not naive else "Naive"
