@@ -66,7 +66,7 @@ def simulation(keys, initialize_fn,
                target_log_prob_fn, init_step_size):
   result_mse = []
   # very long warmup phase might result in memory issue.
-  skip_trace = (warmup_length > 500)
+  skip_trace = (warmup_length > 300)
 
   for sim in range(repitition):
     kernel_short, initial_state, total_samples_short, initial_state_super = kernel_setup(warmup_length,sampling_length,
