@@ -55,10 +55,10 @@ def nested_rhat_constrained(result_state, num_super_chains,idx):
     r_hat = jnp.sqrt(1+B/W)[:,idx]
     return r_hat
 
-
+# add a switch for recording the states
 def simulation(keys, initialize_fn,
                warmup_length,sampling_length,
-               naive, repitition,
+               naive, repitition,record_states,
                MSE_list, R_Hat_list,
                num_dim, state_list,
                mean_benchmark,var_benchmark,
@@ -66,7 +66,12 @@ def simulation(keys, initialize_fn,
                target_log_prob_fn, init_step_size):
   result_mse = []
   # very long warmup phase might result in memory issue.
-  skip_trace = (warmup_length > 300)
+  # if record_states = True we do record when warmup < 300
+  # if record_states = False, we skip trace
+  if not record_states:
+     skip_trace = True
+  else:
+     skip_trace = (warmup_length > 300)
 
   for sim in range(repitition):
     kernel_short, initial_state, total_samples_short, initial_state_super = kernel_setup(warmup_length,sampling_length,
@@ -90,17 +95,20 @@ def simulation(keys, initialize_fn,
             "Initial Position":np.asarray(initial_state_super)
           }
     else:
-       result = []
-       result_with_init = []
-       result_short = tfp.mcmc.sample_chain(
-        total_samples_short, initial_state, kernel = kernel_short,
-        seed =keys[sim], trace_fn=None)[-1,:,:]
-       state_record = {
-            "Warmup Length": warmup_length,
-            "Iteration": sim,
-            "States":[],
-            "Initial Position":[]
-          }
+      result = []
+      result_with_init = []
+      result_short = tfp.mcmc.sample_chain(
+         total_samples_short, initial_state, kernel = kernel_short,
+         seed =keys[sim], trace_fn=None)[-1,:,:]
+      #  if not record_states:
+      state_record = {}
+      #  else:
+      #     state_record = {
+      #       "Warmup Length": warmup_length,
+      #       "Iteration": sim,
+      #       "States":[],
+      #       "Initial Position":[]
+      #     }
     state_list.append(state_record)
     # result_short_shape is (2048, num_dim)
     # print(f"result full shape: {result.shape}")
@@ -193,13 +201,20 @@ def trace_plot(state_df, iteration, warmup_length,
             marker="^",
             s=40,
         )
+        plt.title(
+           f"Iteration: {iteration}, Traceplot of Dim {DimIdx1} and Dim {DimIdx2}, "
+           f"{show_chain_num} chains, constrained initialization."
+           f"Warmup Length: {warmup_length}"
+        )
+    else:
+       plt.title(
+          f"Iteration: {iteration}, Traceplot of Dim {DimIdx1} and Dim {DimIdx2}, "
+          f"{show_chain_num} chains, naive initialization."
+          f"Warmup Length: {warmup_length}"
+       )
     plt.xlabel(f"Dimension {DimIdx1}")
     plt.ylabel(f"Dimension {DimIdx2}")
-    plt.title(
-        f"Iteration: {iteration}, Traceplot of Dim {DimIdx1} and Dim {DimIdx2}, "
-        f"{show_chain_num} chains,"
-        f"Warmup Length: {warmup_length}"
-    )
+
     handles = [
     Line2D(
         [0], [0],
