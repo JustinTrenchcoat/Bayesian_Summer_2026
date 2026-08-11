@@ -2,6 +2,7 @@
 # import numpy as np
 # import blackjax
 
+from blackjax.adaptation.base import get_filter_adapt_info_fn
 
 def _reduce_variance_interval(x, axis=None, biased=True, keepdims=False):
     # ddof=0 is biased variance (N), ddof=1 is unbiased variance (N-1)
@@ -108,7 +109,8 @@ def sample_setup(warmup_length,dimension,
         num_chains = num_total_chains,
         n_paths = 1, # might be num_super_chains??
         initial_step_size = init_step_size,
-        num_integration_steps = 1
+        num_integration_steps = 1,
+        adaptation_info_fn=get_filter_adapt_info_fn()
     )
     (last_states, parameters), _ = adapt.run(
         adapt_key,
@@ -168,6 +170,7 @@ def simulation(warmup_length,num_total_chains, num_super_chains,
                 "Rhat": rhat[-1],
                 "MSE":factored_sq_err[dim]})
         del samples
+        jax.clear_caches()
         gc.collect()
      mse_list = np.array(result_mse)
      mse_best = mse_list.min(axis=0)
