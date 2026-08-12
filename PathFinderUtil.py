@@ -2,8 +2,6 @@
 # import numpy as np
 # import blackjax
 
-from blackjax.adaptation.base import get_filter_adapt_info_fn
-
 def _reduce_variance_interval(x, axis=None, biased=True, keepdims=False):
     # ddof=0 is biased variance (N), ddof=1 is unbiased variance (N-1)
     ddof = 0 if biased else 1
@@ -107,7 +105,7 @@ def sample_setup(warmup_length,dimension,
         blackjax.hmc,
         target_log_prob_fn,
         num_chains = num_total_chains,
-        n_paths = 1, # might be num_super_chains??
+        n_paths = 20, # 20 in the Zhang et al.
         initial_step_size = init_step_size,
         num_integration_steps = 1,
         adaptation_info_fn=get_filter_adapt_info_fn()
@@ -190,7 +188,7 @@ def simulation(warmup_length,num_total_chains, num_super_chains,
 ############################################
 # Plotting Functions
 ############################################
-def MSE_vs_Warmup(constrained_df, naive_df, title):
+def MSE_vs_Warmup(constrained_df, naive_df, pf_df, title):
   fig, ax = plt.subplots(figsize=(10, 8), dpi=150)
 
   common = dict(
@@ -234,16 +232,32 @@ def MSE_vs_Warmup(constrained_df, naive_df, title):
     linestyle="--",
     color="black",
     **common)
+  pf_df.plot(
+      y="Avg MSE",
+      linestyle = '-',
+      color = "blue",
+      **common)
+  pf_df.plot(
+      y = "Worst MSE",
+      linestyle = "--",
+      color = "blue",
+      **common)
+  pf_df.plot(
+      y = "Best MSE",
+      linestyle = "--",
+      color = "blue",
+      **common)
   ax.legend(handles=[
     Line2D([0], [0], color="orange", lw=2, label="Constrained"),
-    Line2D([0], [0], color="black", lw=2, label="Naive")])
+    Line2D([0], [0], color="black", lw=2, label="Naive"),
+    Line2D([0], [0], color="blue", lw=2, label="PathFinder")])
 
 
 
 def MSE_vs_Rhat(
     df,
     title,
-    naive,
+    init_type,
     bound,
     threshold,
     num_subchains,
@@ -322,9 +336,7 @@ def MSE_vs_Rhat(
     ###################################################
 
     ax.set_yscale("log")
-
-    if not naive:
-        ax.set_xscale("log")
+    ax.set_xscale("log")
 
     ax.axhline(bound[0], color="black", linestyle="--")
     ax.axhline(bound[1], color="black", linestyle="--")
@@ -334,8 +346,7 @@ def MSE_vs_Rhat(
     ax.set_xlabel(r"$\widehat{R}_{\nu}-1$")
     ax.set_ylabel("MSE")
 
-    suffix = "Constrained" if not naive else "Naive"
-    ax.set_title(f"{title} - {suffix}")
+    ax.set_title(f"{title} - {init_type}")
 
     plt.tight_layout()
     plt.show()
