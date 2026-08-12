@@ -1,4 +1,4 @@
-# Bayesian Research Project (Summer 2026)
+# Many Short Chain MCMC: An Investigation of Convergence Statistics and Initialization Strategies
 
 This repository documents my attempt to reproduce the experimental results from the paper
 
@@ -9,6 +9,8 @@ by Charles Margossian, Matt Hoffman, Pavel Sountsov, Lionel Riou-Durand, Aki Veh
 The goal of this project is to better understand the proposed Nested $\widehat{R}$ diagnostic by reproducing the numerical experiments presented in the paper and exploring its behavior under additional simulation settings.
 
 The original implementation appears to rely on several software packages that have since changed substantially, and some helper files (e.g., `utility.py`) are not publicly available (Update on 2026 Jul 16: Now it is!). As a result, part of this repository also documents the modifications and reimplementations required to reproduce the experiments.
+
+Update on Jul 16, 2026: Now the `utility.py` is available in Dr. Margossian's repo! The [Link](https://github.com/charlesm93/nested-rhat) is here.
 
 ## Repository Structure
 
