@@ -164,10 +164,10 @@ def MSE_vs_Rhat_color(tfp_c_df, tfp_n_df,bjx_c_df, bjx_n_df, pf_df,
      titles =["TFP - Constrained","TFP - Naive","PathFinder",
               "BlackJAX - Constrained","BlackJAX - Naive","PathFinder"]
      if color_choice == "Dimension":
-          vmin = min(df["Dimension"].min() for df in dfs)
-          vmax = max(df["Dimension"].max() for df in dfs)
+         vmin = min(df["Dimension"].min() for df in dfs)
+         vmax = max(df["Dimension"].max() for df in dfs)
 
-          for ax, df, panel_title in zip(axes, dfs, titles):
+         for ax, df, panel_title in zip(axes, dfs, titles):
                sc = ax.scatter(
                     df["Rhat"] - 1,
                     df["MSE"],
@@ -180,15 +180,22 @@ def MSE_vs_Rhat_color(tfp_c_df, tfp_n_df,bjx_c_df, bjx_n_df, pf_df,
                )
 
                ax.set_title(panel_title)
-          cbar = fig.colorbar(sc, ax = axes, shrink=0.8)
-          cbar.set_label("Dimension")
+         cbar = fig.colorbar(sc, ax = axes, shrink=0.8)
+         cbar.set_label("Dimension")
+
+         if vmax - vmin <= 20:
+               tick_values = np.arange(vmin, vmax +1)
+         else:
+               tick_values = np.linspace(vmin , vmax, 5). round().astype(int)
+         cbar.set_ticks(tick_values)
+          
      elif color_choice== "Warmup Length":
           warmups = np.sort(
                np.unique(np.concatenate(
                     [df["Warmup Length"].unique() for df in dfs]
                ))
           )
-          cmap = plt.get_cmap("turbo")
+          cmap = plt.get_cmap("RdYlBu_r")
           color_map = {
                w:cmap(x)
                for w, x in zip(warmups, np.linspace(0,1,len(warmups)))
@@ -238,6 +245,13 @@ def MSE_vs_Rhat_color(tfp_c_df, tfp_n_df,bjx_c_df, bjx_n_df, pf_df,
             )
           
           ax.set_xlabel(r"$\widehat{R}_{\nu}-1$")
+
+          ax.tick_params(
+               axis="both",
+               which = "both",
+               labelbottom = True,
+               labelleft = True
+          )
      axes[0].set_ylabel("MSE")
 
      fig.suptitle(title)
