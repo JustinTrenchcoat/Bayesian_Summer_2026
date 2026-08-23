@@ -42,6 +42,7 @@ def MSE_vs_Warmup(W_c_df, W_n_df,title):
         linestyle="--",
         color="black",
         **common)
+    ax.set_title(title, fontsize=18, fontweight="bold", pad=12)
     ax.legend(handles=[
         Line2D([0], [0], color="orange", lw=2, label="Constrained"),
         Line2D([0], [0], color="black", lw=2, label="Naive")])
@@ -72,8 +73,8 @@ def MSE_vs_Rhat(df, title, naive, bound, threshold, num_subchains):
     ax.set_ylabel("Scaled squared error")
 
     suffix = "Constrained" if not naive else "Naive"
-    ax.set_title(f"{title} - {suffix}")
-
+    ax.set_title(f"{title} - {suffix}", fontsize=20, fontweight="bold")
+    
     plt.tight_layout()
     plt.show()
 
@@ -144,7 +145,7 @@ def MSE_vs_Warmup_Jumbo(tfp_c_df, tfp_n_df,
         '-',
         "PathFinder Initialization",
         hatch = None)
-    ax.set_title(title)
+    ax.set_title(title, fontsize=20, fontweight="bold")
     ax.set_ylabel("Mean Squared Error")
     ax.set_xlabel("Warmup Length")
     ax.set_xscale("log")
@@ -250,5 +251,5 @@ def MSE_vs_Rhat_color(dfs, titles, supertitle, bound,
           )
      axes[0].set_ylabel("Scaled Squared Error")
 
-     fig.suptitle(supertitle)
+     fig.suptitle(supertitle, fontsize=20, fontweight="bold")
      plt.show()
