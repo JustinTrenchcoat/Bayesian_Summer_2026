@@ -9,7 +9,7 @@ def MSE_vs_Warmup(W_c_df, W_n_df,title):
         logy=True,
         legend=False,
         ax=ax,
-        ylabel="MSE",
+        ylabel="Mean Sqaured Error",
         x="Warmup Length")
     ax = W_c_df.plot(
         y="Avg MSE",
@@ -110,7 +110,7 @@ def MSE_vs_Warmup_Jumbo(tfp_c_df, tfp_n_df,
                df["Best MSE"],
                df["Worst MSE"],
                color = color,
-               alpha = 0.15,
+               alpha = 0.20,
                hatch = hatch)
     # TFP implementation:
     plot_with_band(
@@ -124,7 +124,7 @@ def MSE_vs_Warmup_Jumbo(tfp_c_df, tfp_n_df,
         colors["TFP"],
         linestyles["Naive"],
         "TFP-Naive",
-        hatch = "///")
+        hatch = "oo")
     # BlackJAX implementation
     plot_with_band(
         bjx_c_df,
@@ -145,7 +145,7 @@ def MSE_vs_Warmup_Jumbo(tfp_c_df, tfp_n_df,
         "PathFinder Initialization",
         hatch = None)
     ax.set_title(title)
-    ax.set_ylabel("MSE")
+    ax.set_ylabel("Mean Squared Error")
     ax.set_xlabel("Warmup Length")
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -154,15 +154,11 @@ def MSE_vs_Warmup_Jumbo(tfp_c_df, tfp_n_df,
     plt.show()
     
 # Color Coded Scatter Plots
-def MSE_vs_Rhat_color(tfp_c_df, tfp_n_df,bjx_c_df, bjx_n_df, pf_df,
-                      title, bound, threshold,num_subchains, color_choice):
+def MSE_vs_Rhat_color(dfs, titles, supertitle, bound, 
+                      threshold,num_subchains, color_choice):
      fig, axes = plt.subplots(2,3, figsize=(25,10),dpi=150,
                               sharex=True, sharey = True)
      axes = axes.flatten()
-     dfs=[tfp_c_df, tfp_n_df, pf_df,
-          bjx_c_df, bjx_n_df, pf_df]
-     titles =["TFP - Constrained","TFP - Naive","PathFinder",
-              "BlackJAX - Constrained","BlackJAX - Naive","PathFinder"]
      if color_choice == "Dimension":
          vmin = min(df["Dimension"].min() for df in dfs)
          vmax = max(df["Dimension"].max() for df in dfs)
@@ -176,7 +172,7 @@ def MSE_vs_Rhat_color(tfp_c_df, tfp_n_df,bjx_c_df, bjx_n_df, pf_df,
                     vmin = vmin,
                     vmax = vmax,
                     s=35,
-                    alpha = 0.4
+                    alpha = 0.5
                )
 
                ax.set_title(panel_title)
@@ -210,7 +206,7 @@ def MSE_vs_Rhat_color(tfp_c_df, tfp_n_df,bjx_c_df, bjx_n_df, pf_df,
                          subset["MSE"],
                          color = color_map[warmup],
                          s=35,
-                         alpha=0.4)
+                         alpha=0.5)
                ax.set_title(panel_title)
           handles = [Line2D(
                [0],[0],marker="o", color = color_map[warmup],
@@ -252,9 +248,7 @@ def MSE_vs_Rhat_color(tfp_c_df, tfp_n_df,bjx_c_df, bjx_n_df, pf_df,
                labelbottom = True,
                labelleft = True
           )
-     axes[0].set_ylabel("MSE")
+     axes[0].set_ylabel("Scaled Squared Error")
 
-     fig.suptitle(title)
-     if color_choice == "Warmup Length":
-          plt.subplots_adjust(right=0.88)
+     fig.suptitle(supertitle)
      plt.show()
