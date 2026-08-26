@@ -10,7 +10,8 @@ def MSE_vs_Warmup(W_c_df, W_n_df,title):
         legend=False,
         ax=ax,
         ylabel="Mean Sqaured Error",
-        x="Warmup Length")
+        x="Warmup Length",
+        fontsize=14)
     ax = W_c_df.plot(
         y="Avg MSE",
         title=title,
@@ -43,6 +44,8 @@ def MSE_vs_Warmup(W_c_df, W_n_df,title):
         color="black",
         **common)
     ax.set_title(title, fontsize=18, fontweight="bold", pad=12)
+    ax.set_xlabel(common["x"], fontsize=common["fontsize"])
+    ax.set_ylabel(common["ylabel"], fontsize=common["fontsize"])
     ax.legend(handles=[
         Line2D([0], [0], color="orange", lw=2, label="Constrained"),
         Line2D([0], [0], color="black", lw=2, label="Naive")])
@@ -68,9 +71,10 @@ def MSE_vs_Rhat(df, title, naive, bound, threshold, num_subchains):
     ax.axhline(bound[1], color="black", linestyle="--")
     ax.axhline(1 / num_subchains, color="black")
     ax.axvline(threshold, color="blue", linestyle="--")
+    ax.tick_params(axis='both', labelsize=14)
 
-    ax.set_xlabel(r"$\widehat{R}_{\nu}-1$")
-    ax.set_ylabel("Scaled squared error")
+    ax.set_xlabel(r"$\widehat{R}_{\nu}-1$",fontsize=14)
+    ax.set_ylabel("Scaled squared error",fontsize=14)
 
     suffix = "Constrained" if not naive else "Naive"
     ax.set_title(f"{title} - {suffix}", fontsize=20, fontweight="bold")
@@ -92,12 +96,7 @@ def MSE_vs_Warmup_Jumbo(tfp_c_df, tfp_n_df,
     linestyles = {
            "Constrained":"-",
            "Naive":"--"}
-    common = dict(
-           logx=True,
-           logy=True,
-           legend=False,
-           ax=ax,
-           x="Warmup Length")
+
     def plot_with_band(df, color, linestyle, label, hatch):
            ax.plot(
                df["Warmup Length"],
@@ -146,10 +145,11 @@ def MSE_vs_Warmup_Jumbo(tfp_c_df, tfp_n_df,
         "PathFinder Initialization",
         hatch = None)
     ax.set_title(title, fontsize=20, fontweight="bold")
-    ax.set_ylabel("Mean Squared Error")
-    ax.set_xlabel("Warmup Length")
+    ax.set_ylabel("Mean Squared Error",fontsize=14)
+    ax.set_xlabel("Warmup Length",fontsize=14)
     ax.set_xscale("log")
     ax.set_yscale("log")
+    ax.tick_params(axis='both', labelsize=14)
 
     ax.legend()
     plt.show()
@@ -176,8 +176,8 @@ def MSE_vs_Rhat_color(dfs, titles, supertitle, bound,
                     alpha = 0.5
                )
 
-               ax.set_title(panel_title)
-         cbar = fig.colorbar(sc, ax = axes, shrink=0.8)
+               ax.set_title(panel_title, fontsize=15, pad=8)
+         cbar = fig.colorbar(sc, ax = axes, shrink=0.8,fraction =0.025,pad=0.02,)
          cbar.set_label("Dimension")
 
          if vmax - vmin <= 20:
@@ -190,8 +190,8 @@ def MSE_vs_Rhat_color(dfs, titles, supertitle, bound,
           warmups = np.sort(
                np.unique(np.concatenate(
                     [df["Warmup Length"].unique() for df in dfs]
-               ))
-          )
+                    ))
+                    )
           cmap = plt.get_cmap("RdYlBu_r")
           color_map = {
                w:cmap(x)
@@ -208,16 +208,16 @@ def MSE_vs_Rhat_color(dfs, titles, supertitle, bound,
                          color = color_map[warmup],
                          s=35,
                          alpha=0.5)
-               ax.set_title(panel_title)
+               ax.set_title(panel_title, fontsize=15, pad=8)
           handles = [Line2D(
                [0],[0],marker="o", color = color_map[warmup],
                linestyle = "", markersize = 7, label=str(warmup)) for warmup in warmups]
+
           fig.legend(
                handles = handles,
                title = "Warmup Length",
-               loc = "center right",
-               bbox_to_anchor = (1.02, 0.5),
-               ncol = 1,
+               loc = "center left",
+               bbox_to_anchor = (0.84, 0.5),
                fontsize = 9,
           )
      else:
@@ -228,28 +228,27 @@ def MSE_vs_Rhat_color(dfs, titles, supertitle, bound,
 
           ax.axhline(
                bound[0], color="black",linestyle="--"
-          )
-
+               )
           ax.axhline(
                bound[1], color="black",linestyle="--"
-          )
-
+               )
           ax.axhline(
-            1 / num_subchains,color="black"
-            )
+               1 / num_subchains,color="black"
+               )
           ax.axvline(
             threshold, color="blue",linestyle="--"
             )
           
-          ax.set_xlabel(r"$\widehat{R}_{\nu}-1$")
-
+          ax.set_xlabel(r"$\widehat{R}_{\nu}-1$",fontsize=14)
+          ax.set_ylabel("Scaled Squared Error",fontsize=14)
           ax.tick_params(
                axis="both",
                which = "both",
                labelbottom = True,
-               labelleft = True
-          )
-     axes[0].set_ylabel("Scaled Squared Error")
-
+               labelleft = True,
+               labelsize=14
+               )
+     fig.subplots_adjust(top=0.88,bottom=0.08,left=0.07,
+                         right=0.82,hspace=0.32,wspace=0.20)
      fig.suptitle(supertitle, fontsize=20, fontweight="bold")
      plt.show()
