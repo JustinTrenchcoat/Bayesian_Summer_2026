@@ -18,6 +18,8 @@ The project has three main objectives:
 
 ## Project Status
 
+This project has been transitioned to my Degree Capstone Project! [Link to the new repository](https://github.com/JustinTrenchcoat/Capstone_Many_Short_Chain)
+
 - [x] Reproduce original TFP experiments
 - [x] Implement BlackJAX workflow
 - [x] Implement PathFinder initialization
